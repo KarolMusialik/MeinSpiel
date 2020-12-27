@@ -26,6 +26,7 @@ class System(object):
         self.dtype_fortschreibung = f_dict.get('file_system_fortschreibung_struktur')
         
         self.file_system_statistik=work_dir+'system_statistik.csv'
+        self.file_system_statistik_beschreibung = work_dir+'system_statistik_beschreibung.txt'
         
         self.LegeBestand()
         self.LegeFortschreibung()
@@ -35,7 +36,9 @@ class System(object):
         self.files_dict['wSchreibeInBilanzCSVork_dir']=work_dir
         self.files_dict['file_system_bestand']=self.file_system_bestand
         self.files_dict['file_system_fortschreibung']=self.file_system_fortschreibung
+
         self.files_dict['file_system_statistik']=self.file_system_statistik
+        self.files_dict['file_system_statistik_beschreibung']=self.file_system_statistik_beschreibung
         
         work_dir_pm = work_dir+'pm/'
         if os.path.isdir(work_dir_pm) == False:

@@ -17,8 +17,10 @@ class Statistik(object):
         self.file_system_bestand_struktur=f_dict.get('file_system_bestand_struktur')
 
         self.file_statistik=f_dict.get('file_system_statistik')
+        self.file_statistik_beschreibung=f_dict.get('file_system_statistik_beschreibung')
         
         self.grafik_file_statistik_anzahl = f_dict.get('grafik_file_statistik_anzahl')
+        self.grafik_file_statistik_jsb = f_dict.get('grafik_file_statistik_jsb')
         
         self.dtype_statistik_dict= { 'von':int, 'bis':int, 'produkt':int, 'position':str, 'vsnr':int, 'histnr':int, 'name':str, 'wert':float}
 
@@ -28,9 +30,10 @@ class Statistik(object):
         self.Abgang(von, bis)
         self.Ende(von, bis)
         self.CheckeStatistik(von, bis)
-        self.ZeichneStatistik()
+        self.ZeichneStatistik('anzahl', self.grafik_file_statistik_anzahl)
+        self.ZeichneStatistik('jsb', self.grafik_file_statistik_jsb)
         
-    def ZeichneStatistik(self):
+    def ZeichneStatistik(self, opt, file_picture):
         #es werden Übersichten für die Statistik erstellt:
         datei=self.file_statistik
         
@@ -41,7 +44,7 @@ class Statistik(object):
 
         #zuerst müssen die Jahre ermittelt werden, die in der Tabelle existieren
         #es werden nur anzahlen betrachtet
-        df1=df[(df.name=='anzahl')].groupby('bis', as_index=False).count()
+        df1=df[(df.name==opt)].groupby('bis', as_index=False).count()
         df2=df1[['bis']]
     
         for index, row in df2.iterrows():
@@ -49,21 +52,21 @@ class Statistik(object):
             jahr=bis[0:4]
             col_labels.append(jahr)
     
-        anzahl={}
-        anzahl_dict={}
-        name='anzahl'
+        value={}
+        value_dict={}
+        name=opt
         for jahr in col_labels:
-            anzahl_dict.clear()
-            anzahl_dict['jahr']=jahr
-            anzahl_dict['von']=jahr+'0101'
-            anzahl_dict['bis']=jahr+'1231'
+            value_dict.clear()
+            value_dict['jahr']=jahr
+            value_dict['von']=jahr+'0101'
+            value_dict['bis']=jahr+'1231'
             
             for position in row_labels:
-                anzahl_dict['position']=position.lower()
+                value_dict['position']=position.lower()
     
-                von=int(anzahl_dict.get('von'))
-                bis=int(anzahl_dict.get('bis'))
-                pos=anzahl_dict.get('position')
+                von=int(value_dict.get('von'))
+                bis=int(value_dict.get('bis'))
+                pos=value_dict.get('position')
                 
                 df1=df[((df.name==name) & (df.von==von) & (df.bis==bis) & (df.position==pos))]
                 df2=df1[['von', 'bis', 'position', 'name', 'wert']].groupby(['von', 'bis', 'position', 'name'], as_index=False).sum()
@@ -74,15 +77,15 @@ class Statistik(object):
                 else:
                     if df2.__len__() > 1:
                         #es dürfen nicht mehr als ein wert sein. Also fehler:
-                        text = 'Statistik/ZeichneStatistik: es wurde mehr als nur ein Wert gefunden. das kein nicht sein!: ' + str(anzahl_dict)
+                        text = 'Statistik/ZeichneStatistik: es wurde mehr als nur ein Wert gefunden. das kein nicht sein!: ' + str(value_dict)
                         self.oprot.SchreibeInProtokoll(text)
                     else:
                         index=df2['wert'].index[0]
                         wert=df2.at[index, 'wert']
 
-                anzahl_dict[position]=wert
+                value_dict[position]=wert
             
-            anzahl[jahr]=deepcopy(anzahl_dict)
+            value[jahr]=deepcopy(value_dict)
         
         #Tabelleneinträge:
         table_vals = []
@@ -94,30 +97,32 @@ class Statistik(object):
             row.clear()
             for jahr in col_labels:
                 spalte +=1
-                wert=anzahl.get(jahr).get(position)
+                wert=value.get(jahr).get(position)
                 row.append(wert)
 
             table_vals.append(deepcopy(row))
         
-        # Draw table
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        the_table = plt.table(cellText=table_vals,
-            #colWidths=[0.1] * 3,
-            rowLabels=row_labels,
-            colLabels=col_labels,
-            loc='center')
-
-        the_table.auto_set_font_size(False)
+        # Zeichne Tabelle:
+        fig, ax = plt.subplots(1,1)        
+        
+        ax.axis('off')
+        #the_table = plt.table(cellText=table_vals,rowLabels=row_labels,colLabels=col_labels,loc='center')
+        tabelle = ax.table(cellText=table_vals,
+                           rowLabels=row_labels,
+                           colLabels=col_labels,
+                           loc='center')
+        tabelle.scale(1,2.0)
+        #the_table.auto_set_font_size(False)
         
         # Removing ticks and spines enables you to get the figure only with table
-        plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        plt.tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
-        for pos in ['right','top','bottom','left']:
-            plt.gca().spines[pos].set_visible(False)
+        #plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        #plt.tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
+        #for pos in ['right','top','bottom','left']:
+            #plt.gca().spines[pos].set_visible(False)
 
-        plt.savefig(self.grafik_file_statistik_anzahl, bbox_inches='tight', pad_inches=0.05)
+        
+        #plt.savefig(file_picture, bbox_inches='tight', pad_inches=0.05)
+        plt.savefig(file_picture)
         
     def CheckeStatistik(self, von, bis):
         datei=self.file_statistik

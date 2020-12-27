@@ -298,7 +298,7 @@ class Bilanz(object):
             self.oprot.SchreibeInProtokoll(text)
         else:
             df2=df1[['name', 'wert']]
-            df2['wert'] = pd.to_numeric(df2['wert']) 
+            df2['wert'] = df2['wert'].apply(pd.to_numeric)
 
             df3=df2.groupby('name')['wert'].sum()
             

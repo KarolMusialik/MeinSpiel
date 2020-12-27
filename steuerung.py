@@ -38,6 +38,7 @@ files_dict['file_vertrieb']=files_dict.get('work_dir')+'vertrieb.csv'
 
 files_dict['optionen_file_antrag']=files_dict.get('work_dir')+'optionen_antrag.csv'
 files_dict['protokoll_file_antrag']=files_dict.get('work_dir')+'protokoll_antrag.txt'
+files_dict['file_system_antrag']=files_dict.get('work_dir')+'system_antrag.csv'
 files_dict['optionen_file_antrag_oe']=files_dict.get('work_dir')+'optionen_antrag_oe.csv'
 files_dict['protokoll_file_antrag_oe']=files_dict.get('work_dir')+'protokoll_antrag_oe.txt'
 
@@ -50,7 +51,11 @@ files_dict['protokoll_file_system']=files_dict.get('work_dir')+'protokoll_system
 files_dict['file_system_fortschreibung_struktur']={'vsnr':str, 'histnr':int ,'von':int, 'bis':int, 'name':str, 'wert':str}
 files_dict['file_system_bestand_struktur']={'vsnr':str, 'histnr':int ,'von':int, 'bis':int, 'name':str, 'wert':str}
 files_dict['file_system_fortschreibung']=files_dict.get('work_dir')+'system_fortschreibung.csv'
+
 files_dict['grafik_file_statistik_anzahl']=files_dict.get('work_dir')+'grafik_statistik_anzahl.png'
+files_dict['grafik_file_statistik_jsb']=files_dict.get('work_dir')+'grafik_statistik_jsb.png'
+files_dict['file_system_statistik']=files_dict.get('work_dir')+'system_statistik.csv'
+files_dict['file_system_statistik_beschreibung']=files_dict.get('work_dir')+'system_statistik_beschreibung.txt'
 
 #in diesem dictionary werden Infos zu Kapitalallokation abgelegt:
 ka_sa_dict={}
@@ -271,6 +276,10 @@ def ZeigeGrafik_Statistik_Anzahl():
     file=files_dict.get('grafik_file_statistik_anzahl')
     ZeigeGrafik(file)
 
+def ZeigeGrafik_Statistik_JSB():
+    file=files_dict.get('grafik_file_statistik_jsb')
+    ZeigeGrafik(file)
+
 def LeseAusFensterMainAlleEingaben():
     
     #das Risiko in der kapitalanlage kann man nur einmalig fuer alle Laeufe definiert werden:
@@ -472,6 +481,13 @@ def Steuerung():
         breite=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_statistik_anzahl).get('breite')-10
         wSpielwindow.pushButton_statistik_anzahl.setIconSize(core.QSize(breite,hoehe))
 
+        file_grafik = files_dict.get('grafik_file_statistik_jsb')
+        icon = gui.QIcon(file_grafik)  
+        wSpielwindow.pushButton_statistik_jsb.setIcon(icon)
+        hoehe=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_statistik_jsb).get('hoehe')-10
+        breite=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_statistik_jsb).get('breite')-10
+        wSpielwindow.pushButton_statistik_jsb.setIconSize(core.QSize(breite,hoehe))
+
     oprot.SchreibeInProtokoll("ENDE erreicht!!!")
     print("**** Ende ****")
 
@@ -485,6 +501,7 @@ wMainwindow.actionSpielen.triggered.connect(Steuerung)
 
 wSpielwindow.pushButton_ZSK.clicked.connect(ZeigeGrafik_ZSK)
 wSpielwindow.pushButton_statistik_anzahl.clicked.connect(ZeigeGrafik_Statistik_Anzahl)
+wSpielwindow.pushButton_statistik_jsb.clicked.connect(ZeigeGrafik_Statistik_JSB)
 wSpielwindow.pushButton_Entwicklung_Renten.clicked.connect(ZeigeGrafik_Entwicklung_Renten)
 wSpielwindow.horizontalSlider_Renten.valueChanged.connect(AnteilImSliderRenten)
 
