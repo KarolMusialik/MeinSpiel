@@ -17,6 +17,10 @@ import antrag as antrag
 import system
 import kapitalanlagen as kap
 
+import hilfe_steuerung as hs
+import aufsichtsrat as ar
+import system_dialog_vertrag as sdv
+
 files_dict={}
 #work directory:
 files_dict['work_dir']='/home/karol/Meine_projekte/Daten_zu_MeinSpiel/'
@@ -67,8 +71,27 @@ vertrieb_dict = {}
 #Startjahr der Simulation:
 jahr_beginn=2020
 
+jahr_dict={}
+jahr_dict['jahr']=jahr_beginn
+
 files_dict['Startjahr_Simulation']=jahr_beginn
     
+def SetztSimmungIconAufsichtsrat():
+    file = oar.GibStimmungFile() #file mit dem Icon
+    icon = gui.QIcon(file)  
+    wSpielwindow.pushButton_aufsichtsrat.setIcon(icon)
+    hoehe=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_aufsichtsrat).get('hoehe')-10
+    breite=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_aufsichtsrat).get('breite')-10
+    wSpielwindow.pushButton_aufsichtsrat.setIconSize(core.QSize(breite,hoehe))
+
+def WasMeintAufsichtsrat():
+    jahr=int(jahr_dict.get('jahr'))
+    oar.AussageAR(jahr)
+
+def Vertragsverwaltung():
+    osdv = sdv.SystemDialogVertrag(files_dict)
+    osdv.ZeigeAlleVertraege()
+
 def LeseGroesseEinesButtonsAus(btn):
     dim_dict={}
     w=btn.width()
@@ -107,8 +130,13 @@ def LegeGuVTabelleAn(obil):
     jahr_beginn = files_dict.get('Startjahr_Simulation')
     jahr_aktuell = files_dict.get('jahr_aktuell')
 
+    #Hilfefunktionen:
+    ohs=hs.HilfeSteuerung()
+        
+    #Anzahl der darzustellenden Jahre:    
     anzahl_jahre = int(jahr_aktuell)-int(jahr_beginn)
 
+    #Die Jahre werden im Dialog dargestellt:    
     wSpielwindow.tableWidget_guv.setColumnCount(anzahl_jahre+1)
     wSpielwindow.tableWidget_guv.setRowCount(1)
     
@@ -127,17 +155,21 @@ def LegeGuVTabelleAn(obil):
     key_bilanz['rl']='guv'
     key_bilanz['avbg']='999'
     
-    name = 'bil_gebuchter_beitrag'
-    key_bilanz['name']=name
-    namen[name]='Gebuchter Beitrag'
-    index_row += 1
-    wSpielwindow.tableWidget_guv.setRowCount(index_row)
-    vektor_namen.append(namen.get(name))
-    for i in range(0, anzahl_jahre+1):
-        jahr=str(jahr_beginn+i)
-        key_bilanz['jahr']=jahr
-        wert=obil.LeseBilanzCSV(key_bilanz)        
-        wSpielwindow.tableWidget_guv.setItem(index_row-1,i+1,widgets.QTableWidgetItem(str(wert)))
+    namen ['bil_gebuchter_beitrag']='gebuchter Beitrag'
+    namen ['bil_derue7_veraenderung']='Veränderung der Deckungsrückstellung'
+    namen ['jahresueberschuss']='Jahresüberschuss'
+    
+    for name in namen:
+        key_bilanz['name']=name
+        index_row += 1
+        wSpielwindow.tableWidget_guv.setRowCount(index_row)
+        vektor_namen.append(namen.get(name))
+        for i in range(0, anzahl_jahre+1):
+            jahr=str(jahr_beginn+i)
+            key_bilanz['jahr']=jahr
+            wert=obil.LeseBilanzCSV(key_bilanz)
+            wert=ohs.formatter(wert)
+            wSpielwindow.tableWidget_guv.setItem(index_row-1,i+1,widgets.QTableWidgetItem(str(wert)))
         
     #Zeilenüberschriften:
     wSpielwindow.tableWidget_guv.setVerticalHeaderLabels(vektor_namen)
@@ -147,6 +179,10 @@ def LegeBilanzTabelleAn(obil):
     jahr_beginn = files_dict.get('Startjahr_Simulation')
     jahr_aktuell = files_dict.get('jahr_aktuell')
 
+    #Hilfefunktionen:
+    ohs=hs.HilfeSteuerung()
+
+    #Anzahl der darzustellenden Jahre:    
     anzahl_jahre = int(jahr_aktuell)-int(jahr_beginn)
 
     wSpielwindow.tableWidget_Bilanz.setColumnCount(anzahl_jahre+1)
@@ -157,43 +193,36 @@ def LegeBilanzTabelleAn(obil):
         jahr=str(jahr_beginn+i-1)
         vektor_jahre.append(jahr)
         
+    #Im Dialog werden die Jahre dargestellt:
     wSpielwindow.tableWidget_Bilanz.setHorizontalHeaderLabels(vektor_jahre)
 
+    #Ab hier werden die Bilanzpositionen dargestellt:
     vektor_namen=[]
     index_row = 0   
     namen={}
     
     key_bilanz={}
-    key_bilanz['rl']='Bilanz'
+    key_bilanz['rl']='bilanz'
     key_bilanz['avbg']='999'
     
-    name = 'eigenkapital_ende'
-    key_bilanz['name']=name
-    namen[name]='Eigenkapital'
-    index_row += 1
-    wSpielwindow.tableWidget_Bilanz.setRowCount(index_row)
-    vektor_namen.append(namen.get(name))
-    for i in range(0, anzahl_jahre+1):
-        jahr=str(jahr_beginn+i-1)
-        key_bilanz['jahr']=jahr
-        wert=obil.LeseBilanzCSV(key_bilanz)        
-        wSpielwindow.tableWidget_Bilanz.setItem(index_row-1,i,widgets.QTableWidgetItem(str(wert)))
-    
-    name = 'bil_derue7_ende'
-    key_bilanz['name']=name
-    namen[name]='Bilanz Deckungsrückstellung auf Risiko VU'
-    index_row += 1
-    wSpielwindow.tableWidget_Bilanz.setRowCount(index_row)
-    vektor_namen.append(namen.get(name))
-    for i in range(0, anzahl_jahre+1):
-        jahr=str(jahr_beginn+i-1)
-        key_bilanz['jahr']=jahr
-        wert=obil.LeseBilanzCSV(key_bilanz)        
-        wSpielwindow.tableWidget_Bilanz.setItem(index_row-1,i,widgets.QTableWidgetItem(str(wert)))
-        
+    namen['eigenkapital_ende']='Eigenkapital'
+    namen['bil_derue7_ende']='Deckungskapital a. Risiko VN'
+
+    for name in namen:
+        key_bilanz['name']=name
+        index_row += 1
+
+        wSpielwindow.tableWidget_Bilanz.setRowCount(index_row)
+        vektor_namen.append(namen.get(name))
+        for i in range(0, anzahl_jahre+1):
+            jahr=str(jahr_beginn+i-1)
+            key_bilanz['jahr']=jahr
+            wert=obil.LeseBilanzCSV(key_bilanz)        
+            wert=ohs.formatter(wert)
+
+            wSpielwindow.tableWidget_Bilanz.setItem(index_row-1,i,widgets.QTableWidgetItem(str(wert)))
     
     wSpielwindow.tableWidget_Bilanz.setVerticalHeaderLabels(vektor_namen)
-
 
 
 def LegeLaufzeitAuswahlBeiRentenFest():
@@ -307,7 +336,7 @@ def LeseAusFensterSpielVertriebEingaben():
         a_renten = int(wSpielwindow.lineEdit_Anzahl_Renten.text())
     except:
         a_renten = 0
-        text = 'Eingaben Vertrieb: Anzahl Renten wird auf null gesetzt!'
+        text = 'Eingaben Vertrieb: Anzahl Renten-Antraege wird auf null gesetzt!'
         SchreibeMessage(text)
         wSpielwindow.lineEdit_Anzahl_Renten.setText(str(a_renten))
     
@@ -317,7 +346,7 @@ def LeseAusFensterSpielVertriebEingaben():
         a_bu = int(wSpielwindow.lineEdit_Anzahl_BU.text())
     except:
         a_bu = 0
-        text = 'Eingaben Vertrieb: Anzahl BU wird auf null gesetzt!'
+        text = 'Eingaben Vertrieb: Anzahl BU-Antraege wird auf null gesetzt!'
         SchreibeMessage(text)
         wSpielwindow.lineEdit_Anzahl_BU.setText(str(a_bu))
         
@@ -404,11 +433,12 @@ def Steuerung():
     okap.Init_KA(jahr_beginn)
     
     jahr=int(jahr_beginn)
+    jahr_dict['jahr']=jahr
     files_dict['jahr_aktuell']=jahr
 
     ka_sa_dict.clear()
-    LeseAusFensterMainAlleEingaben()
 
+    LeseAusFensterMainAlleEingaben()
     wSpielwindow.label_Jahr.setText(str(jahr))
     
     #die Tabelle im Dialog mit Ergebnissen der Bilanz wird angelegt: 
@@ -421,6 +451,7 @@ def Steuerung():
     while wSpielwindow.exec_() == widgets.QDialog.Accepted:
         
         files_dict['jahr_aktuell']=jahr
+        jahr_dict['jahr']=jahr
         
         if Kontrollen() == False:
             continue
@@ -436,12 +467,14 @@ def Steuerung():
         okap.Init_SA(ka_sa_dict)
         
         obil.ErstelleBilanzAnfang(jahr)
+
+        oar.BestimmeJahresZiele(jahr) #Die Jahresziele werden abgelegt
         
         overtrieb.SchreibeNeugeschaeft(vertrieb_dict)        
         
         okap.Beginn(jahr)
         okap.Fortschreibung(jahr)
-        
+
         osys.Fortschreibung(von, bis)
         
         oantrag.LeseVertrieb(jahr)
@@ -453,6 +486,11 @@ def Steuerung():
         
         okap.ZeichneKapitalanlagen(jahr)
         
+        #Angaben für den Aufsitzsrat:
+        oar.SetzteWoBinIch('jab') #der JAB ist fertig!
+        oar.BestimmeZielerreichung(jahr)
+        SetztSimmungIconAufsichtsrat() #Die Stimmung des AR kann abgeholt werden
+
         jahr += 1
         files_dict['jahr_aktuell']=jahr
         LegeBilanzTabelleAn(obil) #Ergebnisse der Bilanz
@@ -487,7 +525,7 @@ def Steuerung():
         hoehe=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_statistik_jsb).get('hoehe')-10
         breite=LeseGroesseEinesButtonsAus(wSpielwindow.pushButton_statistik_jsb).get('breite')-10
         wSpielwindow.pushButton_statistik_jsb.setIconSize(core.QSize(breite,hoehe))
-
+        
     oprot.SchreibeInProtokoll("ENDE erreicht!!!")
     print("**** Ende ****")
 
@@ -504,6 +542,8 @@ wSpielwindow.pushButton_statistik_anzahl.clicked.connect(ZeigeGrafik_Statistik_A
 wSpielwindow.pushButton_statistik_jsb.clicked.connect(ZeigeGrafik_Statistik_JSB)
 wSpielwindow.pushButton_Entwicklung_Renten.clicked.connect(ZeigeGrafik_Entwicklung_Renten)
 wSpielwindow.horizontalSlider_Renten.valueChanged.connect(AnteilImSliderRenten)
+wSpielwindow.pushButton_Vertragsverwaltung.clicked.connect(Vertragsverwaltung)
+wSpielwindow.pushButton_aufsichtsrat.clicked.connect(WasMeintAufsichtsrat)
 
 LegeLaufzeitAuswahlBeiRentenFest()
 LegeLaufzeitAuswahlBeiProduktenFest() #Starteinstellungen zu Produkten
@@ -513,6 +553,10 @@ LegeDefoultEinstellungenfest()
 oopt = opt.Optionen(files_dict.get('optionen_file_main'))  
     
 oprot = prot.Protokoll(files_dict.get('protokoll_file_main'))
+
+oar = ar.Aufsichtsrat(files_dict)
+oar.AussageAR(int(jahr_dict.get('jahr')))
+oar.SetztStimmungIcon()
 
 wMainwindow.show()
 app.exec_()

@@ -203,10 +203,6 @@ class Vertrieb():
             satz_dict['wert']=beginn
             self.SchreibeInTabelleVertrieb(satz_dict)
 
-            satz_dict['name']='ende'
-            satz_dict['wert']=ende
-            self.SchreibeInTabelleVertrieb(satz_dict)
-
             satz_dict['name']='anzahl'
             satz_dict['wert']=anzahl_bu
             self.SchreibeInTabelleVertrieb(satz_dict)

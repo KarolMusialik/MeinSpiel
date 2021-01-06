@@ -58,6 +58,7 @@ class System(object):
         self.ofort=fort.Fortschreibung(self.files_dict)
         
     def LegeStatistik(self):
+        #Hier wird lediglich die Tabelle "system_statistik.csv" angelegt
         datei=self.file_system_statistik
         ocsv=pd.DataFrame()
         ocsv["von"]=None
@@ -71,6 +72,8 @@ class System(object):
         ocsv.to_csv(datei, ';', index=False)
 
     def LegeBestand(self):
+        #Hier wird lediglich die Tabelle "system_bestand.csv" nur angelegt
+
         datei=self.file_system_bestand
         ocsv=pd.DataFrame()
         ocsv["vsnr"]=None
@@ -82,6 +85,8 @@ class System(object):
         ocsv.to_csv(datei, ';', index=False)
 
     def LegeFortschreibung(self):
+        #Hier wird lediglich die Tabelle "system_fortschreibung.csv" nur angelegt
+
         datei=self.file_system_fortschreibung
         ocsv=pd.DataFrame()
         ocsv["vsnr"]=None
@@ -99,7 +104,7 @@ class System(object):
         datei=self.file_system_antrag
         df=pd.read_csv(datei, sep=";", dtype=object)
         df1=df[df.name == 'antragsnummer']['wert']
-        
+       
         liste=[]
         for antragsnummer in df1:
             df2=df[(df.antragsnummer==antragsnummer) & (df.name == 'status')]['wert']
@@ -376,6 +381,7 @@ class System(object):
   
     def Fortschreibung(self, von_int, bis_int):
         self.ofort.FortschreibungVonBis(von_int, bis_int)
+        self.ofort.RegulaereAblaeufe(von_int, bis_int)
 
              
     

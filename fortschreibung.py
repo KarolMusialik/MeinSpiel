@@ -46,14 +46,13 @@ class Fortschreibung:
 
     def LeseWertAusFortschreibungCSV(self, key_dict, name):
         datei=self.file_system_fortschreibung
-        df=pd.read_csv(datei, sep=";")
+        struktur = self.file_system_fortschreibung_struktur_dict
+        df=pd.read_csv(datei, sep=";", dtype=struktur)
         
         vsnr = key_dict.get('vsnr')
-        histnr = key_dict.get('histnr')
-        von = key_dict.get('von')
-        bis = key_dict.get('bis')
-        
-        df[['vsnr', 'histnr', 'von', 'bis', 'name', 'wert']] = df[['vsnr', 'histnr', 'von', 'bis', 'name', 'wert']].astype(str)
+        histnr = int(key_dict.get('histnr'))
+        von = int(key_dict.get('von'))
+        bis = int(key_dict.get('bis'))
         
         df1 = df[(df.vsnr == vsnr) & (df.histnr == histnr) & (df.von == von) & (df.bis == bis) & (df.name == name)]
         
@@ -69,15 +68,16 @@ class Fortschreibung:
 
     def LeseVertragAusBestand(self, key):
         vsnr = str(key.get('vsnr'))
-        histnr = str(key.get('histnr'))
-        von = str(key.get('von'))
-        bis = str(key.get('bis'))
+        histnr = int(key.get('histnr'))
+        von = int(key.get('von'))
+        bis = int(key.get('bis'))
         
         vertrag={}
         
         datei=self.file_system_bestand
-        df=pd.read_csv(datei, sep=";")
-        df[['vsnr', 'histnr', 'von', 'bis', 'name', 'wert']] = df[['vsnr', 'histnr', 'von', 'bis', 'name', 'wert']].astype(str)
+        struktur = self.file_system_bestand_struktur_dict
+        
+        df=pd.read_csv(datei, sep=";", dtype=struktur)
         df1 = df[(df.vsnr == vsnr) & (df.histnr == histnr) & (df.von == von) & (df.bis == bis)]['name']
         for name in df1:
             wert=self.LeseWertAusBestandCSV(key,name)
@@ -152,22 +152,26 @@ class Fortschreibung:
     
     def ListeOffenerVertraege(self, von_dict, bis_dict):
         #Ermittlung einer Liste aller aktiven Verträge, die fortgeschrieben werden sollen
+        #Es wird auch eine Liste der ablaufenden Verträge erstellt
         
         datei=self.file_system_bestand
         struktur=self.file_system_bestand_struktur_dict
         
         bis=int(bis_dict.get('jjjjmmtt'))
         von=int(von_dict.get('jjjjmmtt'))
+        bis_jahr = int(bis_dict.get('jahr'))
         
         df=pd.read_csv(datei, sep=";", dtype=struktur)
         df1=df[df.name == 'vsnr']['wert']
         
         self.listeOffenerVertraege=None
+        self.listeAlaufenderVertraege=None
         
         alle_daten_dict={}
         
         for vsnr in df1:    
-            vertrag_vorhanden=False            
+            vertrag_am_ende_vorhanden=False            
+            vertrag_ablauf=False
             
             alle_daten_dict.clear
             alle_daten_dict=df[(df.vsnr==vsnr)].groupby(['vsnr', 'histnr', 'von', 'bis']).groups
@@ -176,24 +180,99 @@ class Fortschreibung:
                 vsnr_histnr = satz[1]
                 vsnr_von = satz[2]
                 vsnr_bis = satz[3]
-                if (vsnr_bis >= bis & vsnr_von <= von):
-                    vertrag_vorhanden=True
+                vsnr_bis_dict = self.hilfe.DictAusDatum(str(vsnr_bis))
+                vsnr_bis_jahr = int(vsnr_bis_dict.get('jahr'))               
+                                                        
+                if (vsnr_bis > bis and vsnr_von <= von):
+                    vertrag_am_ende_vorhanden=True
+                    bis_vertrag=vsnr_bis
+                    von_vertrag=vsnr_von
+                    histnr_vertrag=vsnr_histnr
+
+                if (vsnr_bis_jahr == bis_jahr and vsnr_von <= von):
+                    vertrag_ablauf=True
                     bis_vertrag=vsnr_bis
                     von_vertrag=vsnr_von
                     histnr_vertrag=vsnr_histnr
             
-            if vertrag_vorhanden == True:
+            if vertrag_am_ende_vorhanden == True:
                 self.listeOffenerVertraege=hs.VerketteteListe(vsnr, histnr_vertrag, von_vertrag, bis_vertrag, self.listeOffenerVertraege)
+            
+            if vertrag_ablauf == True:
+                self.listeAlaufenderVertraege=hs.VerketteteListe(vsnr, histnr_vertrag, von_vertrag, bis_vertrag, self.listeAlaufenderVertraege)
     
-    def FortschreibungVonBis(self, von_int, bis_int):
+    def RegulaereAblaeufe(self, von_int, bis_int):
+        #Hier werden die Verträge abgearbeitet, die in diesem Jahr regulär ablaufen:
+        #die Liste dieser Verträge wurde in der Fortschreibung ermittelt
+
+        von_dict=self.hilfe.DictAusDatum(str(von_int))
+        bis_dict=self.hilfe.DictAusDatum(str(bis_int))
+
+        liste = self.listeAlaufenderVertraege
+        if liste == None:
+            text='System/Fortschreibung/RegulaereAblaeufe: Es wurden keine Vertraege zum Aböauf gefunden: von='+str(von_int)+' bis='+str(bis_int)
+            print(text)
+            self.oprot.SchreibeInProtokoll(text)
+            return
+
+        key={}
+        key_alt={}
+        vertrag_bestand={}
+        vertrag_fort_alt={}
+        vertrag_fort_neu={}
         
+        anzahl=0
+        while liste is not None:
+            key.clear()
+            key['vsnr']=liste.vsnr
+            key['histnr']=liste.histnr
+            key['von']=liste.von
+            key['bis']=liste.bis
+            
+            vertrag_bestand.clear()
+            vertrag_bestand=self.LeseVertragAusBestand(key)
+            
+            vertrag_fort_neu.clear()
+            vertrag_fort_alt.clear()
+            key_alt.clear()
+            
+            bis_alt_str=self.RechneDatum(von_dict.get('jjjjmmtt'), -1)
+            
+            key_alt['vsnr']=liste.vsnr
+            key_alt['histnr']=liste.histnr
+            key_alt['bis']=bis_alt_str
+
+            key_alt=self.BestimmeKeyInFortschreibung(key_alt)
+            vertrag_fort_alt=self.LeseVertragAusFortschreibung(key_alt)
+            
+            vertrag_fort_neu=vertrag_bestand #Vertragsdaten aus dem Grundvertrag werden in den neuen Zuatand geholt
+            vertrag_fort_neu=self.AnfangswerteFestlegen(vertrag_fort_alt, vertrag_fort_neu)
+            
+            self.SchreibeVertragFort(vertrag_fort_neu, von_dict, bis_dict)
+
+            liste=liste.nxt
+            anzahl += 1
+        else:
+            text='Fortschreibung/RegulaereAblaeufe: Es wurden keine Vertraege zum Ablauf vorbereitet: von='+str(von_int)+' bis='+str(bis_int)
+            print(text)
+            self.oprot.SchreibeInProtokoll(text)    
+            
+        if anzahl != 0:
+            text='Fortschreibung/RegulaereAblaeufe: Es wurden '+str(anzahl)+' Vertraege zum Ablauf vorbereitet: von='+str(von_int)+' bis='+str(bis_int)
+            print(text)
+            self.oprot.SchreibeInProtokoll(text)    
+
+    def FortschreibungVonBis(self, von_int, bis_int):
+        #Hier werden alle Verträge fortgeschrieben:
+        #- zuerst werden alle Verträge, die aktiv sind, in eine Liste 'Liste der offenen Verträge' identifiziert
+        #- danach wird diese Liste abgearbeitet, d.h. jeder Vertrag wird um ein Jahr fortgeschrieben
         von_dict=self.hilfe.DictAusDatum(str(von_int))
         bis_dict=self.hilfe.DictAusDatum(str(bis_int))
 
         self.ListeOffenerVertraege(von_dict, bis_dict)
         liste = self.listeOffenerVertraege
         if liste == None:
-            text='System: Es wurden keine Vertraege zur Fortschreibung gefunden: von='+str(von_int)+' bis='+str(bis_int)
+            text='System/Fortschreibung: Es wurden keine Vertraege zur Fortschreibung gefunden: von='+str(von_int)+' bis='+str(bis_int)
             print(text)
             self.oprot.SchreibeInProtokoll(text)
             return
@@ -203,6 +282,8 @@ class Fortschreibung:
         vertrag_bestand={}
         vertrag_fort_alt={}
         vertrag_fort_neu={}
+        
+        anzahl=0
         while liste is not None:
             key.clear()
             key['vsnr']=liste.vsnr
@@ -232,10 +313,16 @@ class Fortschreibung:
             self.SchreibeVertragFort(vertrag_fort_neu, von_dict, bis_dict)
 
             liste=liste.nxt
+            anzahl += 1
         else:
-            text='Fortschreibung/FortschreibungVonBis: Es wurden alle Vertraege fortgeschrieben: von='+str(von_int)+' bis='+str(bis_int)
-            print(text)
+            text='Fortschreibung/FortschreibungVonBis: Es wurden keine Vertraege fortgeschrieben: von='+str(von_int)+' bis='+str(bis_int)
             self.oprot.SchreibeInProtokoll(text)    
+            
+        if anzahl != 0:            
+            text='Fortschreibung/FortschreibungVonBis: Es wurden '+str(anzahl)+' Vertraege fortgeschrieben: von='+str(von_int)+' bis='+str(bis_int)
+            print(text)
+            self.oprot.SchreibeInProtokoll(text)
+        
     
     
     
