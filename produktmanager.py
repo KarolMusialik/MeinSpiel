@@ -121,7 +121,9 @@ class Produktmanager(object):
         return vertrag
     
     def Beitrag(self, vertrag):
-        vertrag['bruttojahresbeitrag']=1200
+        anzahl = vertrag.get('anzahl')
+        beitrag = self.produkt.get('beitrag')
+        vertrag['bruttojahresbeitrag']=float(beitrag)*float(anzahl)
         
         return vertrag        
 

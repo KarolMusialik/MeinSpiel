@@ -195,10 +195,14 @@ class Bilanz(object):
         self.SchreibeInBilanzCSV(key_dict)
     
     def Veraenderungspositionen(self, jahr):
+        #Hier werden für alle Bilanzpositionen "name" die Veränderung im GJ ausgerechnet
         name='bil_derue7'
         self.VeraenderungspositionenName(jahr, name)
         
     def VeraenderungspositionenName(self, jahr, name_quelle):
+        #Hier wird für eine Bilanzposition "name_quelle die Veränderung im GJ ausgerechnet
+        #d.h. es wird der Anfangs und Endwert ermittelt und daraus die Veränderung ermittelt
+        
         datei=self.file_bilanz
         df=pd.read_csv(datei, sep=";", dtype=self.dtype_dic)
 
@@ -235,11 +239,11 @@ class Bilanz(object):
             self.oprot.SchreibeInProtokoll(text)
 
          
-            wert=self.KumuliereAlleAvbgInBilanz(key_dict)
-            key_dict['wert']=wert
-            key_dict['avbg']='999'
-            self.SchreibeInBilanzCSV(key_dict)
-    
+        wert=self.KumuliereAlleAvbgInBilanz(key_dict)
+        key_dict['wert']=wert
+        key_dict['avbg']='999'
+        self.SchreibeInBilanzCSV(key_dict)
+
     
     def BilanzPositionenAusFortschreibung(self, jahr):
         key_dict={}
@@ -298,7 +302,7 @@ class Bilanz(object):
             self.oprot.SchreibeInProtokoll(text)
         else:
             df2=df1[['name', 'wert']]
-            df2['wert'] = pd.to_numeric(df2['wert']) 
+            df2['wert'] = df2['wert'].astype(float)
 
             df3=df2.groupby('name')['wert'].sum()
             

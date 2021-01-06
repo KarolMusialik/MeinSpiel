@@ -15,9 +15,10 @@ class Antrag(object):
         self.oopt = opt.Optionen(f_dict.get('optionen_file_antrag'))  
         self.oprot = prot.Protokoll(f_dict.get('protokoll_file_antrag'))
         
-        self.file_system_antrag=self.oopt.LeseInhaltOptionen("file_system_antrag")
+        self.file_system_antrag=f_dict.get('file_system_antrag')
         
         self.LegeAntrag()
+        
         self.pfad=os.path.dirname(self.file_system_antrag)
         self.temp=self.pfad+'/temp.csv'
         
