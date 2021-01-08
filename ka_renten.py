@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import protokoll as prot
@@ -12,23 +11,23 @@ import numpy as np
 class KA_Renten(object):
         
     def __init__(self, f_dict):
-        work_dir=f_dict.get('work_dir')
+        work_dir = f_dict.get('work_dir') + f_dict.get('sep_dir')
         self.work_dir = work_dir
-        file_protokoll=work_dir+'protokoll_ka_renten.txt'
+        file_protokoll = work_dir + 'protokoll_ka_renten.txt'
         self.oprot = prot.Protokoll(file_protokoll)
 
-        self.file_renten_tabelle=work_dir+'ka_renten.csv'
+        self.file_renten_tabelle = work_dir + 'ka_renten.csv'
         self.LegeRentenTabelleAn()
 
-        self.file_renten_sa_tabelle=work_dir+'ka_sa_renten.csv'
+        self.file_renten_sa_tabelle = work_dir + 'ka_sa_renten.csv'
         self.LegeRentenSaTabelleAn()
         
         self.ozsk = zsk.Zinsstrukturkurve(f_dict)
         
-        self.file_renten_grafik=work_dir+'grafik_renten.png'
+        self.file_renten_grafik = work_dir + 'grafik_renten.png'
 
-        self.dtype_dic= { 'jahr':int, 'nr':int, 'von':int, 'bis':int, 'name':str, 'wert':str}
-        self.dtype_sa_dic= { 'jahr':int, 'nr':int, 'von':int, 'bis':int, 'name':str, 'wert':str}
+        self.dtype_dic = { 'jahr':int, 'nr':int, 'von':int, 'bis':int, 'name':str, 'wert':str}
+        self.dtype_sa_dic = { 'jahr':int, 'nr':int, 'von':int, 'bis':int, 'name':str, 'wert':str}
 
     def Init_SA(self, eintrag_dict):
         satz_dict={}

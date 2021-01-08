@@ -11,7 +11,7 @@ import hilfe_statistik as hstat
 class Zinsstrukturkurve(object):
         
     def __init__(self, f_dict):
-        work_dir=f_dict.get('work_dir')
+        work_dir=f_dict.get('work_dir')+f_dict.get('sep_dir')
         self.work_dir = work_dir
         file_protokoll=work_dir+'protokoll_zinsstrukturkurve.txt'
         self.oprot = prot.Protokoll(file_protokoll)

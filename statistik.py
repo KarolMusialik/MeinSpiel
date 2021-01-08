@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import protokoll as prot
 import pandas as pd
@@ -9,20 +8,20 @@ class Statistik(object):
 
     def __init__(self, f_dict):
         
-        work_dir=f_dict.get('work_dir')
-        file_protokoll=work_dir+'protokoll_system_statistik.txt'
+        work_dir = f_dict.get('work_dir')+f_dict.get('sep_dir')
+        file_protokoll = work_dir+'protokoll_system_statistik.txt'
         self.oprot = prot.Protokoll(file_protokoll)
         
-        self.file_system_bestand=f_dict.get('file_system_bestand')
-        self.file_system_bestand_struktur=f_dict.get('file_system_bestand_struktur')
+        self.file_system_bestand = f_dict.get('file_system_bestand')
+        self.file_system_bestand_struktur = f_dict.get('file_system_bestand_struktur')
 
-        self.file_statistik=f_dict.get('file_system_statistik')
-        self.file_statistik_beschreibung=f_dict.get('file_system_statistik_beschreibung')
+        self.file_statistik = f_dict.get('file_system_statistik')
+        self.file_statistik_beschreibung = f_dict.get('file_system_statistik_beschreibung')
         
         self.grafik_file_statistik_anzahl = f_dict.get('grafik_file_statistik_anzahl')
         self.grafik_file_statistik_jsb = f_dict.get('grafik_file_statistik_jsb')
         
-        self.dtype_statistik_dict= { 'von':int, 'bis':int, 'produkt':int, 'position':str, 'vsnr':int, 'histnr':int, 'name':str, 'wert':float}
+        self.dtype_statistik_dict = {'von': int, 'bis': int, 'produkt': int, 'position': str, 'vsnr': int, 'histnr': int, 'name': str, 'wert':float}
 
     def ErstelleStatistik(self, von, bis):
         self.Anfang(von, bis)

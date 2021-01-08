@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import protokoll as prot
@@ -8,16 +7,16 @@ import ka_renten as ka_rente
 class Kapitalanlagen:
         
     def __init__(self, f_dict):
-        work_dir=f_dict.get('work_dir')
-        file_protokoll=work_dir+'protokoll_kapitalanlagen.txt'
+        work_dir = f_dict.get('work_dir')+f_dict.get('sep_dir')
+        file_protokoll = work_dir+'protokoll_kapitalanlagen.txt'
         self.oprot = prot.Protokoll(file_protokoll)
 
-        self.file_kapitalanlagen=work_dir+'kapitalanlagen.csv'
-        self.file_renten_tabelle=work_dir+'ka_renten.csv'
-        self.file_aktien_tabelle=work_dir+'ka_aktien.csv'
-        self.file_sa_tabelle=work_dir+'ka_sa.csv'
+        self.file_kapitalanlagen = work_dir+'kapitalanlagen.csv'
+        self.file_renten_tabelle = work_dir+'ka_renten.csv'
+        self.file_aktien_tabelle = work_dir+'ka_aktien.csv'
+        self.file_sa_tabelle = work_dir+'ka_sa.csv'
         
-        self.file_bilanz=f_dict.get('file_bilanz')
+        self.file_bilanz = f_dict.get('file_bilanz')
 
         self.oka_renten = ka_rente.KA_Renten(f_dict)
         

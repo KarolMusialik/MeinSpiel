@@ -20,46 +20,34 @@ import kapitalanlagen as kap
 import hilfe_steuerung as hs
 import aufsichtsrat as ar
 import system_dialog_vertrag as sdv
+import einstellungen
 
-files_dict={}
-#work directory:
-files_dict['work_dir']='/home/karol/Meine_projekte/Daten_zu_MeinSpiel/'
+os_system = 'Linux' #bzw. Windows
 
-#einzelne Dateien:
-files_dict['mainwindow_file']=files_dict.get('work_dir')+'mainwindow.ui'
-files_dict['spielwindow_file']=files_dict.get('work_dir')+'spielwindow.ui'
-files_dict['leereswindow_file']=files_dict.get('work_dir')+'leereswindow.ui'
+files_dict = {} #hier werden alle verzeichnisse und Dateien abgelegt. Dieses Oblekt wird in jedes Klasse bei Initialisierung übergeben
+if os_system == 'Linux':
+    files_dict['os_system'] = os_system
+    files_dict['sep_dir'] = '/'
+elif system == 'Windows':
+    files_dict['os_system'] = os_system
+    files_dict['sep_dir'] = '/'
+else:
+    print('kein System festgelegt es wird Linux unterstellt!')
+    files_dict['os_system'] = 'Linux'
+    files_dict['sep_dir'] = '/'
 
-files_dict['file_grafik_zsk']=files_dict.get('work_dir')+'grafik_zsk.png'
-files_dict['grafik_file_entwicklung_renten']=files_dict.get('work_dir')+'grafik_renten.png'
+#in diesem dictionary werden Infos zu Kapitalallokation abgelegt:
+ka_sa_dict={}
+ka_renten_sa_dict={}
 
-files_dict['optionen_file_main']=files_dict.get('work_dir')+'optionen_main.csv'
-files_dict['protokoll_file_main']=files_dict.get('work_dir')+'protokoll_main.txt'
+#in diesem dictionary werden Infos zum Neugeschäft abgelegt:
+vertrieb_dict = {}
 
-files_dict['optionen_file_vertrieb']=files_dict.get('work_dir')+'optionen_vertrieb.csv'
-files_dict['protokoll_file_vertrieb']=files_dict.get('work_dir')+'protokoll_vertrieb.txt'
-files_dict['file_vertrieb']=files_dict.get('work_dir')+'vertrieb.csv'
+#Startjahr der Simulation:
+jahr_beginn=2020
 
-files_dict['optionen_file_antrag']=files_dict.get('work_dir')+'optionen_antrag.csv'
-files_dict['protokoll_file_antrag']=files_dict.get('work_dir')+'protokoll_antrag.txt'
-files_dict['file_system_antrag']=files_dict.get('work_dir')+'system_antrag.csv'
-files_dict['optionen_file_antrag_oe']=files_dict.get('work_dir')+'optionen_antrag_oe.csv'
-files_dict['protokoll_file_antrag_oe']=files_dict.get('work_dir')+'protokoll_antrag_oe.txt'
-
-files_dict['protokoll_file_bilanz']=files_dict.get('work_dir')+'protokoll_bilanz.txt'
-files_dict['file_bilanz']=files_dict.get('work_dir')+'bilanz.csv'
-files_dict['file_bilanz_start']=files_dict.get('work_dir')+'bilanz_start.csv'
-files_dict['file_bilanz_struktur']={'jahr':int, 'rgl':str, 'avbg': str, 'name':str, 'wert':str}
-
-files_dict['protokoll_file_system']=files_dict.get('work_dir')+'protokoll_system.txt'
-files_dict['file_system_fortschreibung_struktur']={'vsnr':str, 'histnr':int ,'von':int, 'bis':int, 'name':str, 'wert':str}
-files_dict['file_system_bestand_struktur']={'vsnr':str, 'histnr':int ,'von':int, 'bis':int, 'name':str, 'wert':str}
-files_dict['file_system_fortschreibung']=files_dict.get('work_dir')+'system_fortschreibung.csv'
-
-files_dict['grafik_file_statistik_anzahl']=files_dict.get('work_dir')+'grafik_statistik_anzahl.png'
-files_dict['grafik_file_statistik_jsb']=files_dict.get('work_dir')+'grafik_statistik_jsb.png'
-files_dict['file_system_statistik']=files_dict.get('work_dir')+'system_statistik.csv'
-files_dict['file_system_statistik_beschreibung']=files_dict.get('work_dir')+'system_statistik_beschreibung.txt'
+jahr_dict={} #für das laufende Jahr der Projektion wird dieses Dictionary angelegt
+jahr_dict['jahr']=jahr_beginn
 
 #in diesem dictionary werden Infos zu Kapitalallokation abgelegt:
 ka_sa_dict={}
@@ -529,7 +517,13 @@ def Steuerung():
     oprot.SchreibeInProtokoll("ENDE erreicht!!!")
     print("**** Ende ****")
 
+
+
 app = widgets.QApplication(sys.argv)
+
+oeintellung = einstellungen.Einstellungen(files_dict)
+if oeintellung.LeseEinstellungen() == False: # hier werden die Verzeichnisse festgelegt
+    exit()
 
 wMainwindow=uic.loadUi(files_dict.get('mainwindow_file'))
 wSpielwindow=uic.loadUi(files_dict.get('spielwindow_file'))

@@ -38,17 +38,17 @@ class Optionen:
         self.file_protokoll=self.LeseInhaltOptionen("file_protokoll")
     
     def LeseInhaltOptionen(self, key):
-        wert = " "
+        wert = ''
         df=pd.read_csv(self.file_optionen, sep=";")
         df1 = df[df.key == key]
         
         if df1.empty:
-            wert=0
-            text='Optionen/LeseInhaltOptionen: Kein Eintrag gefunden. Es wurde null verwendet: key='+str(print(key))
+            wert = ''
+            text = 'Optionen/LeseInhaltOptionen: Kein Eintrag gefunden. Es wurde null verwendet: key='+str(print(key))
             print(text)
         else:
-            index=df1.index[0]
-            wert=df1.at[index, 'wert']
+            index = df1.index[0]
+            wert = df1.at[index, 'wert']
         
         return wert       
     
@@ -56,7 +56,7 @@ class Optionen:
         if self.LeseInhaltOptionen(key) != "":
             df = pd.read_csv(self.file_optionen, sep=';')
             print (df)
-            index=df[df['key'] == key].index[0]
+            index = df[df['key'] == key].index[0]
             dff = df.drop(index)
             print(dff)
             dff.to_csv(self.file_optionen, ';', index=False)

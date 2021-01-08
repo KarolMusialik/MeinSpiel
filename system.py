@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import protokoll as prot
 import pandas as pd
@@ -16,38 +15,38 @@ class System(object):
 
     def __init__(self, f_dict):
         
-        work_dir=f_dict.get('work_dir')
-        self.file_protokoll=work_dir+'protokoll_system.csv'
+        work_dir = f_dict.get('work_dir')+f_dict.get('sep_dir')
+        self.file_protokoll = work_dir+'protokoll_system.csv'
         
-        self.file_system_bestand=work_dir+'system_bestand.csv'
-        f_dict['system_bestand']=self.file_system_bestand
+        self.file_system_bestand = work_dir+'system_bestand.csv'
+        f_dict['system_bestand'] = self.file_system_bestand
         
-        self.file_system_fortschreibung=f_dict.get('file_system_fortschreibung')
+        self.file_system_fortschreibung = f_dict.get('file_system_fortschreibung')
         self.dtype_fortschreibung = f_dict.get('file_system_fortschreibung_struktur')
         
-        self.file_system_statistik=work_dir+'system_statistik.csv'
+        self.file_system_statistik = work_dir+'system_statistik.csv'
         self.file_system_statistik_beschreibung = work_dir+'system_statistik_beschreibung.txt'
         
         self.LegeBestand()
         self.LegeFortschreibung()
         self.LegeStatistik()
         
-        self.files_dict=f_dict
-        self.files_dict['wSchreibeInBilanzCSVork_dir']=work_dir
-        self.files_dict['file_system_bestand']=self.file_system_bestand
-        self.files_dict['file_system_fortschreibung']=self.file_system_fortschreibung
+        self.files_dict = f_dict
+        self.files_dict['wSchreibeInBilanzCSVork_dir'] = work_dir
+        self.files_dict['file_system_bestand'] = self.file_system_bestand
+        self.files_dict['file_system_fortschreibung'] = self.file_system_fortschreibung
 
-        self.files_dict['file_system_statistik']=self.file_system_statistik
-        self.files_dict['file_system_statistik_beschreibung']=self.file_system_statistik_beschreibung
+        self.files_dict['file_system_statistik'] = self.file_system_statistik
+        self.files_dict['file_system_statistik_beschreibung'] = self.file_system_statistik_beschreibung
         
-        work_dir_pm = work_dir+'pm/'
+        work_dir_pm = work_dir+'pm' + f_dict.get('sep_dir')
         if os.path.isdir(work_dir_pm) == False:
             os.makedirs(work_dir_pm)
         else:
             shutil.rmtree(work_dir_pm, ignore_errors=True)
             os.makedirs(work_dir_pm)            
 
-        self.files_dict['woSchreibeInBilanzCSVrk_dir_pm']=work_dir_pm
+        self.files_dict['woSchreibeInBilanzCSVrk_dir_pm'] = work_dir_pm
 
         self.ostat = stat.Statistik(self.files_dict)
         

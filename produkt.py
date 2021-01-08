@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import protokoll as prot
 import pandas as pd
@@ -8,11 +7,11 @@ class Produkt(object):
     
     def __init__(self, f_dict):
         
-        work_dir=f_dict.get('work_dir')
-        file_protokoll=work_dir+'protokoll_system_pm_produkt.txt'
+        work_dir = f_dict.get('work_dir')+f_dict.get('sep_dir')
+        file_protokoll = work_dir + 'protokoll_system_pm_produkt.txt'
         self.oprot = prot.Protokoll(file_protokoll)
         
-        self.file_produkt=work_dir+'produkt.csv'        
+        self.file_produkt = work_dir+'produkt.csv'
     
     def LeseProduktDaten(self, d):
         datei=self.file_produkt

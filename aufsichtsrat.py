@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtGui import QPixmap
@@ -12,15 +11,20 @@ class Aufsichtsrat(QtWidgets.QDialog):
     def __init__(self, f_dict, parent=None):
         super().__init__(parent)
         
-        self.work_dir=f_dict.get('work_dir')
-        self.file_aufsichtsrat=self.work_dir+'aufsichtsrat.csv'
-        self.file_aufsichtsrat_struktur_dict={'jahr':int, 'name':str, 'wert':str}
+        self.work_dir = f_dict.get('work_dir')
+        self.sep_dir = f_dict.get('sep_dir')
+        verzeichnis = self.work_dir + self.sep_dir
+
+        self.username = f_dict.get('username')
+
+        self.file_aufsichtsrat = verzeichnis+'aufsichtsrat.csv'
+        self.file_aufsichtsrat_struktur_dict = {'jahr':int, 'name':str, 'wert':str}
         self.LegeTabelleAufsichtaratAn()
 
-        file_protokoll=self.work_dir+'protokoll_aufsichtsrat.txt'
+        file_protokoll = verzeichnis+'protokoll_aufsichtsrat.txt'
         self.oprot = prot.Protokoll(file_protokoll)
        
-        self.file_ui=self.work_dir+'aufsichtsrat.ui'
+        self.file_ui = verzeichnis+'aufsichtsrat.ui'
         
         self.mindestverzinsung = 0.04
         self.wobinich = 'hallo'
@@ -200,14 +204,18 @@ class Aufsichtsrat(QtWidgets.QDialog):
         return wert
     
     def SetztStimmungIcon(self):
+
+        sep_dir = self.sep_dir
+        verzeichnis = self.work_dir + sep_dir
+
         if self.meinzustand == 'gruen':
-            self.stimmung_icon = self.work_dir+'gruen_icon.png'
+            self.stimmung_icon = verzeichnis+'gruen_icon.png'
         elif self.meinzustand == 'gelb':     
-            self.stimmung_icon = self.work_dir+'gelb_icon.png'
+            self.stimmung_icon = verzeichnis+'gelb_icon.png'
         elif self.meinzustand == 'rot':     
-            self.stimmung_icon = self.work_dir+'rot_icon.png'
+            self.stimmung_icon = verzeichnis+'rot_icon.png'
         elif self.meinzustand == 'gefeuert':     
-            self.stimmung_icon = self.work_dir+'gefeuert_icon.png'
+            self.stimmung_icon = verzeichnis+'gefeuert_icon.png'
         else:
             text = 'Aufsichtsrat/SetztStimmungIcon: es konnte kein Icon zugeordnet werden'
             self.oprot.SchreibeInProtokoll(text)
@@ -258,18 +266,21 @@ class Aufsichtsrat(QtWidgets.QDialog):
         pass
     
     def BestimmeBild(self):
-        
+
+        sep_dir = self.sep_dir
+        verzeichnis = self.work_dir + sep_dir
+
         if self.wobinich == 'hallo':
-            file_bild=self.work_dir+'ar_hallo_1.png'
+            file_bild=verzeichnis+'ar_hallo_1.png'
         elif self.wobinich == 'jab':
             if self.meinzustand == 'gruen':
-                file_bild=self.work_dir+'ar_jab_gruen_1.png'
+                file_bild=verzeichnis+'ar_jab_gruen_1.png'
             elif self.meinzustand == 'gelb':
-                file_bild=self.work_dir+'ar_jab_gruen_1.png'
+                file_bild=verzeichnis+'ar_jab_gruen_1.png'
             elif self.meinzustand == 'rot':
-                file_bild=self.work_dir+'ar_jab_gruen_1.png'
+                file_bild=verzeichnis+'ar_jab_gruen_1.png'
             elif self.meinzustand == 'gefeuert':
-                file_bild=self.work_dir+'ar_jab_gefeuert_1.png'
+                file_bild=verzeichnis+'ar_jab_gefeuert_1.png'
             else:
                 text = 'Aufsichtsrat/BestimmeBild: es konnte kein passendes Bild zum Zustand zugeordnet werden'
                 self.oprot.SchreibeInProtokoll(text)
@@ -286,7 +297,7 @@ class Aufsichtsrat(QtWidgets.QDialog):
         text = ''
         
         if self.wobinich == 'hallo':
-            text = 'Hallo! Ich heisse Rachel. \n' 
+            text = 'Hallo ' + str(self.username) + '! Ich heisse Rachel. \n'
             text += 'Ich bin deine Geldgeberin. \n'
             text += 'Arbeite sorgfälltig mit dem Geld. Ich melde mich nach jedem Jahresabschluss. Wir besprechen dann deine Zukunft.\n'
             text += '\n\nIch sehe vielleicht nett aus, bin aber nicht nett. Ich erwarte:\n'
@@ -309,7 +320,7 @@ class Aufsichtsrat(QtWidgets.QDialog):
                 darlehen_ende = float(wert)
 
             
-            text = 'Oh! Der Jahresabschluss ist da.\n'
+            text = 'Oh '+self.username+'! Der Jahresabschluss ist da.\n'
             text +='Wir haben vereinbart, dass das Eigenkapital mindestens %.2f' %darlehen_ende +' beträgt \n'
             
             ar_key_dict['name']='eigenkapital_ende'
